@@ -2,7 +2,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Делаем холст на весь экран
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -10,9 +9,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-
-// ---СОСТОЯНИЯ ИГРЫ (Game States) ---
-// Это как переключатель: в каком меню мы сейчас находимся
+// --- СОСТОЯНИЯ ---
 const STATES = {
     MAIN_MENU: 'main_menu',
     SETTINGS: 'settings',
@@ -20,242 +17,176 @@ const STATES = {
     GAME_HUB: 'game_hub'
 };
 let currentState = STATES.MAIN_MENU;
+let currentHubTab = 'none'; // 'shop', 'inventory', 'friends', 'play'
 
+// --- ДАННЫЕ ИГРОКА ---
+let playerID = "#SOUL" + Math.floor(Math.random() * 1000 + 1);
+let playerPixels = []; // Тут хранится лицо
+let showProfile = false;
 
-// --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
+// --- МЫШЬ ---
 let mouse = { x: 0, y: 0, clicked: false };
-let lastTime = 0;
-let targetFPS = 60;
-
-// Объекты UI элементов
-const settingsUI = document.getElementById('settingsUI');
-const charCreationUI = document.getElementById('charCreationUI');
-const brSlider = document.getElementById('brightness');
-const fpsInput = document.getElementById('fpsLimit');
-const brOverlay = document.getElementById('brightnessOverlay');
-
-// Данные персонажа (заготовка)
-let playerPixels = []; // Тут будем хранить координаты черных точек лица
-
-
-// --- СЛУШАТЕЛИ СОБЫТИЙ (КЛИКИ, МЫШЬ) ---
-window.addEventListener('mousemove', (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-});
+window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 window.addEventListener('mousedown', () => { mouse.clicked = true; });
 window.addEventListener('mouseup', () => { mouse.clicked = false; });
 
-// Логика кнопок HTML (Настройки, Создание перса)
+// --- UI ЭЛЕМЕНТЫ (HTML) ---
+const settingsUI = document.getElementById('settingsUI');
+const charCreationUI = document.getElementById('charCreationUI');
+const brSlider = document.getElementById('brightness');
+const brOverlay = document.getElementById('brightnessOverlay');
+
 document.getElementById('backToMenu').onclick = () => { changeState(STATES.MAIN_MENU); };
 document.getElementById('finishChar').onclick = () => { finishCharacter(); };
 
-// Логика слайдеров
 brSlider.oninput = function() {
-    // Инвертируем: 200% яркости -> 0 opacity оверлея, 10% яркости -> 0.9 opacity
-    let val = this.value;
-    let opacity = 1 - (val / 200);
-    if(opacity < 0) opacity = 0;
-    brOverlay.style.opacity = opacity;
+    brOverlay.style.opacity = 1 - (this.value / 200);
 };
 
-fpsInput.onchange = function() { targetFPS = this.value; };
-
-
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-
-// Функция переключения экранов
+// --- ФУНКЦИИ ---
 function changeState(newState) {
     currentState = newState;
-    
-    // Скрываем все HTML окна по умолчанию
     settingsUI.classList.add('hidden');
     charCreationUI.classList.add('hidden');
-
-    // Показываем нужные HTML окна, если необходимо
-    if (newState === STATES.SETTINGS) {
-        settingsUI.classList.remove('hidden');
-    } else if (newState === STATES.CHAR_CREATION) {
+    if (newState === STATES.SETTINGS) settingsUI.classList.remove('hidden');
+    if (newState === STATES.CHAR_CREATION) {
         charCreationUI.classList.remove('hidden');
-        setupPixelEditor(); // Запускаем редактор лица
+        setupPixelEditor();
     }
 }
 
-// Функция для рисования светящегося текста/объектов на Канвасе
-function drawGlowing(renderFunc) {
-    ctx.shadowColor = 'white';
-    ctx.shadowBlur = 15;
+function drawGlowing(renderFunc, color = 'white', blur = 15) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
     renderFunc();
-    // Сбрасываем тень, чтобы не тормозило остальные элементы
-    ctx.shadowBlur = 0; 
+    ctx.shadowBlur = 0;
 }
 
-
-// --- КЛАССЫ ЭЛЕМЕНТОВ МЕНЮ ---
-
-// Класс для кнопок, рисуемых внутри Canvas (Играть, Выход)
-class CanvasButton {
+// --- КЛАСС КНОПКИ ---
+class Button {
     constructor(text, x, y, w, h, onClick) {
-        this.text = text;
-        this.x = x - w/2; // Центрируем
-        this.y = y;
-        this.w = w;
-        this.h = h;
-        this.onClick = onClick;
-        this.isHovered = false;
+        this.text = text; this.x = x; this.y = y; this.w = w; this.h = h; this.onClick = onClick;
     }
-
     update() {
-        // Проверка наведения мыши
-        if (mouse.x > this.x && mouse.x < this.x + this.w &&
-            mouse.y > this.y && mouse.y < this.y + this.h) {
-            this.isHovered = true;
-            if (mouse.clicked) {
-                this.onClick();
-                mouse.clicked = false; // Предотвращаем двойной клик
-            }
-        } else {
-            this.isHovered = false;
+        if (mouse.x > this.x && mouse.x < this.x + this.w && mouse.y > this.y && mouse.y < this.y + this.h) {
+            if (mouse.clicked) { this.onClick(); mouse.clicked = false; }
+            return true;
         }
+        return false;
     }
-
     draw() {
-        ctx.font = "24px 'Courier New'";
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        if (this.isHovered) {
-            // Рисуем залитую кнопку при наведении
-            drawGlowing(() => {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-                ctx.fillStyle = 'black';
-                ctx.fillText(this.text, this.x + this.w/2, this.y + this.h/2);
-            });
-        } else {
-            // Рисуем контурную кнопку
-            drawGlowing(() => {
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(this.x, this.y, this.w, this.h);
-                ctx.fillStyle = 'white';
-                ctx.fillText(this.text, this.x + this.w/2, this.y + this.h/2);
-            });
-        }
+        let hover = this.update();
+        drawGlowing(() => {
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = hover ? 'white' : 'black';
+            ctx.strokeRect(this.x, this.y, this.w, this.h);
+            if(hover) ctx.fillRect(this.x, this.y, this.w, this.h);
+            ctx.fillStyle = hover ? 'black' : 'white';
+            ctx.font = "18px 'Courier New'";
+            ctx.textAlign = 'center';
+            ctx.fillText(this.text, this.x + this.w/2, this.y + this.h/2 + 5);
+        });
     }
 }
 
-// Создаем кнопки главного меню
-const menuButtons = [
-    new CanvasButton("ИГРАТЬ", canvas.width/2, canvas.height/2, 200, 50, () => { changeState(STATES.CHAR_CREATION); }),
-    new CanvasButton("НАСТРОЙКИ", canvas.width/2, canvas.height/2 + 70, 200, 50, () => { changeState(STATES.SETTINGS); }),
-    new CanvasButton("ВЫХОД", canvas.width/2, canvas.height/2 + 140, 200, 50, () => { alert("Логика выхода (window.close) в браузере часто заблокирована."); })
+// Кнопки главного меню
+const mainButtons = [
+    new Button("ИГРАТЬ", 0, 0, 200, 50, () => changeState(STATES.CHAR_CREATION)),
+    new Button("НАСТРОЙКИ", 0, 0, 200, 50, () => changeState(STATES.SETTINGS)),
+    new Button("ВЫХОД", 0, 0, 200, 50, () => alert("Выход"))
 ];
 
+// Кнопки Хаба (слева)
+const hubButtons = [
+    new Button("ИГРАТЬ", 20, 100, 150, 40, () => currentHubTab = 'play'),
+    new Button("ИНВЕНТАРЬ", 20, 150, 150, 40, () => currentHubTab = 'inventory'),
+    new Button("МАГАЗИН", 20, 200, 150, 40, () => currentHubTab = 'shop'),
+    new Button("ДРУЗЬЯ", 20, 250, 150, 40, () => currentHubTab = 'friends'),
+    new Button("ВЫЙТИ", 20, 300, 150, 40, () => changeState(STATES.MAIN_MENU))
+];
 
-// --- Отрисовка ГЛАВНОГО МЕНЮ ---
-function drawMainMenu() {
-    // 1. Фон
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 2. Белая светящаяся Земля (сверху кнопок)
-    drawGlowing(() => {
-        ctx.beginPath();
-        // Рисуем дугу внизу экрана
-        ctx.arc(canvas.width / 2, canvas.height + 300, 400, Math.PI, 0);
-        ctx.fillStyle = 'white';
-        ctx.fill();
-    });
-
-    // 3. Логотип
-    ctx.font = "bold 60px 'Courier New'";
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    drawGlowing(() => {
-        ctx.fillText("COSMOSOULS", canvas.width / 2, canvas.height / 3);
-    });
-
-    // 4. Кнопки
-    menuButtons.forEach(btn => {
-        // Обновляем координаты кнопок при ресайзе
-        btn.x = canvas.width / 2 - btn.w / 2;
-        btn.update();
-        btn.draw();
-    });
-}
-
-
-// --- ПОДСИСТЕМА: СОЗДАНИЕ ПЕРСОНАЖА (Drawing Face) ---
+// --- РЕДАКТОР ЛИЦА ---
 const pCanvas = document.getElementById('pixelCanvas');
 const pCtx = pCanvas.getContext('2d');
-const PIXEL_SIZE = 5; // Размер одного "пикселя" для рисования
-const GRID_SIZE = 100; // Размер зоны рисования
-
 function setupPixelEditor() {
-    pCtx.fillStyle = '#111';
-    pCtx.fillRect(0,0, GRID_SIZE, GRID_SIZE);
-    
-    // Рисуем белый круг (основу духа)
-    pCtx.beginPath();
-    pCtx.arc(GRID_SIZE/2, GRID_SIZE/2, GRID_SIZE/2 - 5, 0, Math.PI*2);
     pCtx.fillStyle = 'white';
-    pCtx.fill();
-
-    // Очищаем массив точек при входе
+    pCtx.beginPath(); pCtx.arc(50, 50, 45, 0, Math.PI*2); pCtx.fill();
     playerPixels = [];
-    
-    pCanvas.onmousedown = (e) => { paintPixel(e); pCanvas.onmousemove = paintPixel; };
-    window.onmouseup = () => { pCanvas.onmousemove = null; };
+    pCanvas.onmousedown = (e) => { paint(e); pCanvas.onmousemove = paint; };
+    window.onmouseup = () => pCanvas.onmousemove = null;
 }
-
-function paintPixel(e) {
-    // Получаем координаты клика относительно маленького канваса
+function paint(e) {
     const rect = pCanvas.getBoundingClientRect();
-    const x = Math.floor((e.clientX - rect.left) / PIXEL_SIZE) * PIXEL_SIZE;
-    const y = Math.floor((e.clientY - rect.top) / PIXEL_SIZE) * PIXEL_SIZE;
+    const x = Math.floor((e.clientX - rect.left)/5)*5;
+    const y = Math.floor((e.clientY - rect.top)/5)*5;
+    pCtx.fillStyle = 'black';
+    pCtx.fillRect(x, y, 5, 5);
+    playerPixels.push({x: x-50, y: y-50});
+}
+function finishCharacter() { changeState(STATES.GAME_HUB); }
 
-    // Проверяем, находится ли точка внутри круга (чтобы не рисовать за пределами духа)
-    const centerX = GRID_SIZE / 2;
-    const centerY = GRID_SIZE / 2;
-    const radius = GRID_SIZE / 2 - 5;
-    const dist = Math.sqrt((x - centerX)**2 + (y - centerY)**2);
+// --- ОТРИСОВКА ЭКРАНОВ ---
 
-    if (dist < radius) {
-        pCtx.fillStyle = 'black';
-        pCtx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
-        // Сохраняем точку в массив
-        playerPixels.push({x: x - centerX, y: y - centerY}); 
-    }
+function drawLoading(x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Date.now() / 200);
+    ctx.strokeStyle = 'white';
+    ctx.beginPath(); ctx.arc(0,0, 20, 0, Math.PI); ctx.stroke();
+    ctx.restore();
+    ctx.fillText("ЗАГРУЗКА...", x, y + 50);
 }
 
-function finishCharacter() {
-    console.log("Лицо нарисовано. Точки:", playerPixels);
-    changeState(STATES.GAME_HUB);
-    alert("Персонаж создан! Дальше нужно программировать Меню Игры (Hub). В консоли браузера (F12) лежат данные лица.");
-}
-
-
-
-// --- ОСНОВНОЙ ИГРОВОЙ ЦИКЛ (Game Loop) ---
-function gameLoop(timeStamp) {
-    // Расчет FPS (необязательно для меню, но пригодится для игры)
-    let deltaTime = timeStamp - lastTime;
+function drawHub() {
+    ctx.fillStyle = 'black'; ctx.fillRect(0,0, canvas.width, canvas.height);
     
-    // В зависимости от состояния рисуем разные вещи
-    if (currentState === STATES.MAIN_MENU) {
-        drawMainMenu();
-    } else if (currentState === STATES.GAME_HUB) {
-        // Просто черный экран для заготовки
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'white';
-        ctx.fillText("ЗДЕСЬ БУДЕТ ИГРОВОЙ ХАБ", canvas.width/2, canvas.height/2);
-    }
-    // Настройки и Создание персонажа рисуются HTML поверх канваса
+    // Боковая панель
+    ctx.strokeStyle = 'white';
+    ctx.strokeRect(10, 80, 170, canvas.height - 100);
+    hubButtons.forEach(b => b.draw());
 
+    // Иконка профиля (справа сверху)
+    let profX = canvas.width - 60, profY = 20;
+    ctx.strokeRect(profX, profY, 40, 40);
+    ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(profX+20, profY+20, 15, 0, Math.PI*2); ctx.fill();
+    
+    if (mouse.x > profX && mouse.x < profX+40 && mouse.y > profY && mouse.y < profY+40 && mouse.clicked) {
+        showProfile = !showProfile; mouse.clicked = false;
+    }
+
+    if (showProfile) {
+        ctx.fillStyle = 'rgba(0,0,0,0.9)'; ctx.fillRect(canvas.width - 220, 70, 200, 120);
+        ctx.strokeStyle = 'white'; ctx.strokeRect(canvas.width - 220, 70, 200, 120);
+        ctx.fillStyle = 'white'; ctx.textAlign = 'left';
+        ctx.fillText("ИГРОК: SOUL_MASTER", canvas.width - 210, 100);
+        ctx.fillText("ID: " + playerID, canvas.width - 210, 130);
+    }
+
+    // Контент справа
+    let contentX = 200, contentY = 100;
+    if (currentHubTab === 'shop' || currentHubTab === 'inventory') {
+        drawLoading(contentX + (canvas.width-200)/2, canvas.height/2);
+    } else if (currentHubTab === 'play') {
+        ctx.beginPath(); ctx.moveTo(contentX + (canvas.width-200)/2, 100); ctx.lineTo(contentX + (canvas.width-200)/2, canvas.height-50); ctx.stroke();
+        ctx.textAlign = 'center';
+        ctx.fillText("СОЗДАТЬ ЛОББИ", contentX + (canvas.width-200)/4, 150);
+        ctx.fillText("ВОЙТИ В ЛОББИ", contentX + (canvas.width-200)*0.75, 150);
+    }
+}
+
+function gameLoop() {
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+    if (currentState === STATES.MAIN_MENU) {
+        ctx.fillStyle = 'black'; ctx.fillRect(0,0, canvas.width, canvas.height);
+        drawGlowing(() => {
+            ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height+300, 400, Math.PI, 0); ctx.fillStyle = 'white'; ctx.fill();
+        });
+        ctx.fillStyle = 'white'; ctx.font = "bold 50px 'Courier New'"; ctx.textAlign = 'center';
+        ctx.fillText("COSMOSOULS", canvas.width/2, canvas.height/3);
+        mainButtons.forEach((b, i) => { b.x = canvas.width/2 - 100; b.y = canvas.height/2 + i*70; b.draw(); });
+    } else if (currentState === STATES.GAME_HUB) {
+        drawHub();
+    }
     requestAnimationFrame(gameLoop);
 }
-
-// Запуск цикла
 requestAnimationFrame(gameLoop);
