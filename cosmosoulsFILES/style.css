@@ -1,0 +1,80 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Чтобы не было полос прокрутки */
+    background-color: black;
+    color: white;
+    font-family: 'Courier New', Courier, monospace; /* Ретро шрифт */
+    user-select: none; /* Запрет выделения текста */
+}
+
+#gameCanvas {
+    display: block;
+}
+
+/* Эффект свечения для текста и кнопок */
+.glowing-text {
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 
+                 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* Слои интерфейса поверх игры */
+.UI-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8); /* Полупрозрачный фон меню */
+    z-index: 10;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.settings-box, .creation-box {
+    text-align: center;
+    border: 2px solid white;
+    padding: 40px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+button {
+    background: none;
+    border: 1px solid white;
+    color: white;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background-color: white;
+    color: black;
+    box-shadow: 0 0 15px white;
+}
+
+/* Холст для рисования пикселей */
+#pixelCanvas {
+    border: 1px solid #333;
+    background-color: #111;
+    cursor: crosshair;
+    margin: 20px 0;
+}
+
+/* Глобальный слой яркости */
+#brightnessOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: black;
+    opacity: 0; /* 0 - полная яркость, 1 - темнота */
+    pointer-events: none; /* Пропускает клики сквозь себя */
+    z-index: 9999; /* Поверх всего */
+}
