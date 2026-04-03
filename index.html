@@ -2,36 +2,61 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COSMOSOULS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Battle of the Grid</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="ui-layer" class="glass-panel">
+        <header class="top-bar">
+            <div class="player-info">
+                <span id="player-name">Игрок</span>
+                <span class="trophies">🏆 <span id="trophies-count">0</span></span>
+            </div>
+            <div class="resources">
+                <span class="tokens">🪙 <span id="tokens-count">1000</span></span>
+                <span class="crystals">💎 <span id="crystals-count">10</span></span>
+            </div>
+        </header>
 
-    <canvas id="gameCanvas"></canvas>
+        <div class="tabs-content">
+            <div id="tab-shop" class="tab active">
+                <h2>Магазин (Гача)</h2>
+                <div class="gacha-container">
+                    <button class="gold-btn" onclick="gameApp.openBox('silver')">Серебряный Ящик<br>Победа / 800 Ж</button>
+                    <button class="gold-btn" onclick="gameApp.openBox('gold')">Золотой Ящик<br>5000 Ж</button>
+                    <button class="ultra-btn" onclick="gameApp.openBox('mega')">Мега-ящик<br>200 💎</button>
+                </div>
+                <div id="gacha-result" class="gacha-result"></div>
+            </div>
 
-    <div id="settingsUI" class="hidden UI-layer">
-        <div class="settings-box">
-            <h2>НАСТРОЙКИ</h2>
-            <label>Яркость: <input type="range" id="brightness" min="10" max="200" value="100"></label>
-            <br><br>
-            <label>Ограничение FPS: <input type="number" id="fpsLimit" min="10" max="144" value="60"></label>
-            <br><br>
-            <button id="backToMenu">НАЗАД</button>
+            <div id="tab-battle" class="tab" style="display: none;">
+                <canvas id="gameCanvas" width="400" height="600"></canvas>
+                <div class="battle-ui">
+                    <div class="elixir-bar">
+                        <div id="elixir-fill" class="elixir-fill"></div>
+                        <span id="elixir-text" class="elixir-text">0 / 25</span>
+                    </div>
+                    <div class="deck-slots" id="deck-slots">
+                        </div>
+                </div>
+            </div>
+
+            <div id="tab-friends" class="tab" style="display: none;">
+                <h2>Друзья</h2>
+                <ul id="friends-list" class="friends-list">
+                    <li>Бот 1 (🏆 100) <button onclick="gameApp.sendGift(this)" class="gold-btn small">Подарить 100🪙</button></li>
+                    <li>Бот 2 (🏆 450) <button onclick="gameApp.sendGift(this)" class="gold-btn small">Подарить 100🪙</button></li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    <div id="charCreationUI" class="hidden UI-layer">
-        <div class="creation-box">
-            <h2>НАРИСУЙ ЛИЦО ДУХУ</h2>
-            <p>(Кликай пиксели внутри круга)</p>
-            <canvas id="pixelCanvas" width="100" height="100"></canvas>
-            <br>
-            <button id="finishChar">ГОТОВО</button>
-        </div>
+        <nav class="bottom-nav">
+            <button onclick="gameApp.switchTab('shop')">Магазин</button>
+            <button onclick="gameApp.switchTab('battle'); gameApp.startBattle()">В БОЙ</button>
+            <button onclick="gameApp.switchTab('friends')">Друзья</button>
+        </nav>
     </div>
-
-    <div id="brightnessOverlay"></div>
 
     <script src="game.js"></script>
 </body>
