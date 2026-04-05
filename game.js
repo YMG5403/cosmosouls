@@ -1,283 +1,306 @@
-// ================= DATA: ПЕРСОНАЖИ =================
-const ALL_UNITS = [
-    { id: 1, name: "Рыцарь-Ученик", cost: 3, hp: 15, dmg: 5, speed: 2, type: "normal", rarity: "common", color: "#C0C0C0", shape: "circle" },
-    { id: 2, name: "Белый Эльф", cost: 5, hp: 10, dmg: 8, speed: 2, type: "ranged", rarity: "common", color: "#FFFFFF", shape: "rect" },
-    { id: 3, name: "Каменный Голем", cost: 9, hp: 60, dmg: 4, speed: 0.8, type: "rusher", rarity: "rare", color: "#808080", shape: "rect", size: 25 },
-    { id: 4, name: "Бандитское Дуо", cost: 4, hp: 8, dmg: 3, speed: 3, type: "normal", rarity: "common", color: "#FF0000", shape: "circle", count: 2 },
-    { id: 5, name: "Королевское Трио", cost: 8, hp: 12, dmg: 5, speed: 1.5, type: "ranged", rarity: "rare", color: "#0000FF", shape: "circle", count: 3 },
-    { id: 6, name: "Гном-Инженер", cost: 6, hp: 14, dmg: 10, speed: 2.5, type: "assassin", rarity: "common", color: "#FFA500", shape: "oval" },
-    { id: 7, name: "Боевой Монах", cost: 5, hp: 12, dmg: 9, speed: 2.5, type: "assassin", rarity: "common", color: "#FF8C00", shape: "circle" },
-    { id: 8, name: "Кактус-Задира", cost: 4, hp: 10, dmg: 6, speed: 1.5, type: "ranged", rarity: "common", color: "#00FF00", shape: "circle" },
-    { id: 9, name: "Ледяной Волк", cost: 6, hp: 16, dmg: 5, speed: 3.5, type: "normal", rarity: "rare", color: "#00FFFF", shape: "oval" },
-    { id: 10, name: "Двойной Блокпост", cost: 10, hp: 40, dmg: 0, speed: 0, type: "building", rarity: "rare", color: "#8B4513", shape: "rect" },
-    { id: 11, name: "Рыцарь-Ведро", cost: 6, hp: 25, dmg: 4, speed: 1.5, type: "normal", rarity: "rare", color: "#A9A9A9", shape: "circle" },
-    { id: 12, name: "Теневой Убийца", cost: 6, hp: 8, dmg: 15, speed: 3, type: "assassin", rarity: "epic", color: "#4B0082", shape: "circle" },
-    { id: 13, name: "Гоблин-Наездник", cost: 7, hp: 20, dmg: 8, speed: 3.5, type: "rusher", rarity: "epic", color: "#006400", shape: "oval" },
-    { id: 14, name: "Реактивный Роллер", cost: 5, hp: 12, dmg: 7, speed: 4, type: "rusher", rarity: "epic", color: "#00FFFF", shape: "circle" },
-    { id: 15, name: "Орк-Громила", cost: 7, hp: 30, dmg: 12, speed: 1.5, type: "normal", rarity: "epic", color: "#228B22", shape: "rect" },
-    { id: 16, name: "Чумной Доктор", cost: 8, hp: 15, dmg: 4, speed: 2, type: "ranged", rarity: "epic", color: "#2F4F4F", shape: "circle" },
-    { id: 17, name: "Огненный Маг", cost: 9, hp: 12, dmg: 14, speed: 1.5, type: "ranged", rarity: "epic", color: "#FF4500", shape: "circle" },
-    { id: 18, name: "Паровой Вертолет", cost: 11, hp: 25, dmg: 10, speed: 2.5, type: "rusher", rarity: "epic", color: "#B87333", shape: "circle" },
-    { id: 19, name: "Железный Страж", cost: 12, hp: 45, dmg: 6, speed: 1, type: "normal", rarity: "epic", color: "#708090", shape: "rect", size: 20 },
-    { id: 20, name: "Пожиратель Пустоты", cost: 25, hp: 100, dmg: 25, speed: 1, type: "rusher", rarity: "ultra", color: "#000000", shape: "circle", size: 30 }
+// ================= РЕЕСТР ПЕРСОНАЖЕЙ =================
+// Текстуры ожидаются в папке assets/ (например assets/knight.png). Если их нет, рисуется цветной fallback.
+const UNITS = [
+    { id: 1, name: "Рыцарь", cost: 3, hp: 200, dmg: 15, speed: 1.5, type: "melee", color: "#bdc3c7", tex: "assets/knight.png", radius: 15 },
+    { id: 2, name: "Эльф", cost: 5, hp: 100, dmg: 20, speed: 1.8, type: "ranged", color: "#2ecc71", tex: "assets/elf.png", radius: 12 },
+    { id: 3, name: "Голем", cost: 9, hp: 800, dmg: 40, speed: 0.8, type: "rusher", color: "#7f8c8d", tex: "assets/golem.png", radius: 30 },
+    { id: 4, name: "Бандиты", cost: 4, hp: 80, dmg: 12, speed: 2.5, type: "melee", color: "#e74c3c", tex: "assets/bandit.png", radius: 12, count: 2 },
+    { id: 20, name: "ПОЖИРАТЕЛЬ", cost: 25, hp: 1500, dmg: 100, speed: 0.6, type: "rusher", color: "#8e44ad", tex: "assets/void.png", radius: 40 }
 ];
 
-// ================= СОСТОЯНИЕ (LOCAL STORAGE) =================
-const state = {
-    tokens: parseInt(localStorage.getItem('tokens')) || 1000,
-    crystals: parseInt(localStorage.getItem('crystals')) || 10,
-    trophies: parseInt(localStorage.getItem('trophies')) || 0,
-    unlocked: JSON.parse(localStorage.getItem('unlocked')) || [1, 2, 3, 4], // Начальные айдишники
-    deck: [1, 2, 3, 4] // Выбранные 4 карты
-};
-
-function saveState() {
-    localStorage.setItem('tokens', state.tokens);
-    localStorage.setItem('crystals', state.crystals);
-    localStorage.setItem('trophies', state.trophies);
-    localStorage.setItem('unlocked', JSON.stringify(state.unlocked));
-    updateUI();
-}
-
-function updateUI() {
-    document.getElementById('tokens-count').innerText = state.tokens;
-    document.getElementById('crystals-count').innerText = state.crystals;
-    document.getElementById('trophies-count').innerText = state.trophies;
-}
-
-// ================= ЛОГИКА ГАЧИ =================
-function rollGacha(boxType) {
-    let rand = Math.random() * 100;
-    let pool = [];
-    
-    if (boxType === 'silver') {
-        if (state.tokens < 800) return alert("Недостаточно жетонов!");
-        state.tokens -= 800;
-        pool = rand < 80 ? ALL_UNITS.filter(u => u.rarity === 'common') : ALL_UNITS.filter(u => u.rarity === 'rare');
-    } else if (boxType === 'gold') {
-        if (state.tokens < 5000) return alert("Недостаточно жетонов!");
-        state.tokens -= 5000;
-        pool = rand < 85 ? ALL_UNITS.filter(u => u.rarity === 'rare') : ALL_UNITS.filter(u => u.rarity === 'epic');
-        state.tokens += Math.floor(Math.random() * 1500) + 2500; // Бонус
-    } else if (boxType === 'mega') {
-        if (state.crystals < 200) return alert("Недостаточно кристаллов!");
-        state.crystals -= 200;
-        state.tokens += 10000;
-        state.crystals += Math.floor(Math.random() * 6) + 5;
-        pool = rand < 10 ? ALL_UNITS.filter(u => u.rarity === 'ultra') : ALL_UNITS.filter(u => u.rarity === 'epic');
-    }
-
-    const wonUnit = pool[Math.floor(Math.random() * pool.length)];
-    if (!state.unlocked.includes(wonUnit.id)) state.unlocked.push(wonUnit.id);
-    
-    document.getElementById('gacha-result').innerText = `Выпало: ${wonUnit.name} (${wonUnit.rarity.toUpperCase()})`;
-    saveState();
-}
-
-// ================= ДВИЖОК БОЯ (CANVAS) =================
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-let gameLoop, elixirTimer;
-let elixir = 0;
-let entities = [];
-let bases = [];
-
-class Base {
-    constructor(isPlayer, y) {
-        this.isPlayer = isPlayer;
-        this.hp = 3000;
-        this.maxHp = 3000;
-        this.x = 200;
-        this.y = y;
-        this.radius = 30;
-    }
-    draw() {
-        ctx.fillStyle = this.isPlayer ? '#3498db' : '#e74c3c';
-        ctx.fillRect(this.x - 30, this.y - 30, 60, 60);
-        ctx.fillStyle = 'white';
-        ctx.fillText(this.hp, this.x - 15, this.y + 5);
-    }
-}
-
-class Entity {
-    constructor(unitData, x, y, isPlayer) {
-        this.data = unitData;
-        this.x = x;
-        this.y = y;
-        this.hp = unitData.hp * 10; // Скейл для симуляции
-        this.maxHp = this.hp;
-        this.isPlayer = isPlayer;
-        this.size = unitData.size || 10;
-        this.lastAttack = 0;
-        this.target = null;
-    }
-
-    findTarget() {
-        if (this.data.type === "rusher") {
-            // Рашеры идут только на базу
-            this.target = bases.find(b => b.isPlayer !== this.isPlayer);
-            return;
-        }
-
-        // Ассасины и обычные ищут ближайшего врага или базу
-        let closest = null;
-        let minDist = Infinity;
-        let enemies = entities.filter(e => e.isPlayer !== this.isPlayer).concat(bases.filter(b => b.isPlayer !== this.isPlayer));
-        
-        for (let e of enemies) {
-            let dist = Math.hypot(this.x - e.x, this.y - e.y);
-            if (dist < minDist) {
-                minDist = dist;
-                closest = e;
-            }
-        }
-        this.target = closest;
-    }
-
-    update() {
-        if (!this.target || this.target.hp <= 0) this.findTarget();
-        if (!this.target) return;
-
-        let dx = this.target.x - this.x;
-        let dy = this.target.y - this.y;
-        let dist = Math.hypot(dx, dy);
-
-        let attackRange = this.data.type === 'ranged' ? 100 : this.size + 20;
-
-        if (dist > attackRange) {
-            // Движение
-            this.x += (dx / dist) * this.data.speed;
-            this.y += (dy / dist) * this.data.speed;
-        } else {
-            // Атака (1 раз в секунду)
-            if (Date.now() - this.lastAttack > 1000) {
-                this.target.hp -= this.data.dmg * 5;
-                this.lastAttack = Date.now();
-                
-                // Эффект Пожирателя
-                if(this.data.id === 20 && this.target.isPlayer !== undefined) {
-                    this.hp = Math.min(this.maxHp, this.hp + this.data.dmg); // Вампиризм
-                }
-            }
-        }
-    }
-
-    draw() {
-        ctx.fillStyle = this.data.color;
-        ctx.beginPath();
-        if (this.data.shape === 'rect') {
-            ctx.fillRect(this.x - this.size, this.y - this.size, this.size*2, this.size*2);
-        } else {
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        // HP Bar
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x - 10, this.y - this.size - 10, 20, 3);
-        ctx.fillStyle = 'green';
-        ctx.fillRect(this.x - 10, this.y - this.size - 10, 20 * (this.hp/this.maxHp), 3);
-    }
-}
-
-// ================= УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ =================
-const gameApp = {
-    switchTab(tabId) {
-        document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
-        document.getElementById(`tab-${tabId}`).style.display = 'flex';
-        if (tabId !== 'battle') this.stopBattle();
-    },
-
-    openBox(type) { rollGacha(type); },
-
-    sendGift(btn) {
-        btn.innerText = "Отправлено!";
-        btn.disabled = true;
-        state.tokens += 100;
-        saveState();
-        alert("Вы подарили 100 Жетонов и получили 100 Жетонов в ответ!");
-    },
-
-    initDeck() {
-        const slots = document.getElementById('deck-slots');
-        slots.innerHTML = '';
-        state.deck.forEach(id => {
-            const unit = ALL_UNITS.find(u => u.id === id);
-            slots.innerHTML += `
-                <div class="card" onclick="gameApp.spawnUnit(${unit.id})">
-                    <span class="cost">${unit.cost}</span>
-                    <div style="width:20px; height:20px; background:${unit.color}; border-radius:${unit.shape==='circle'?'50%':'0'}"></div>
-                    <span>${unit.name}</span>
-                </div>
-            `;
+// ================= МЕНЕДЖЕР АССЕТОВ =================
+const Assets = {
+    images: {},
+    load: function() {
+        UNITS.forEach(u => {
+            const img = new Image();
+            img.src = u.tex;
+            // Сохраняем картинку. Если она не загрузится (нет файла), мы перехватим это в отрисовке
+            this.images[u.id] = img; 
         });
-    },
+    }
+};
+Assets.load();
 
-    spawnUnit(id) {
-        const unit = ALL_UNITS.find(u => u.id === id);
-        if (elixir >= unit.cost) {
-            elixir -= unit.cost;
-            let count = unit.count || 1;
-            for(let i=0; i<count; i++) {
-                entities.push(new Entity(unit, 100 + (Math.random()*200), 500 + (Math.random()*20), true));
-            }
-            this.updateElixirUI();
+// ================= ДВИЖОК ЭФФЕКТОВ (ЧАСТИЦЫ) =================
+class ParticleSystem {
+    constructor() { this.particles = []; }
+    spawn(x, y, color, count = 10, isExplosion = false) {
+        for(let i=0; i<count; i++) {
+            this.particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * (isExplosion ? 8 : 3),
+                vy: (Math.random() - 0.5) * (isExplosion ? 8 : 3),
+                life: 1.0, decay: Math.random() * 0.05 + 0.02,
+                color: color, size: Math.random() * 4 + 2
+            });
         }
+    }
+    updateAndDraw(ctx) {
+        for(let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i];
+            p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+            if(p.life <= 0) { this.particles.splice(i, 1); continue; }
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+    }
+}
+const FX = new ParticleSystem();
+
+// ================= ЛОГИКА СУЩНОСТЕЙ =================
+class Entity {
+    constructor(data, x, y, team) {
+        this.data = data; this.x = x; this.y = y; this.team = team;
+        this.hp = data.hp; this.maxHp = data.hp;
+        this.lastAtk = 0; this.actionState = 'walk'; // walk, attack
+        this.animOffset = 0; // Для визуализации дыхания/шагов
+    }
+    update(entities, bases) {
+        this.animOffset += 0.1;
+        let target = null; let minDist = Infinity;
+        let enemies = entities.filter(e => e.team !== this.team).concat(bases.filter(b => b.team !== this.team));
+
+        if (this.data.type === 'rusher') {
+            target = bases.find(b => b.team !== this.team);
+        } else {
+            enemies.forEach(e => {
+                let d = Math.hypot(e.x - this.x, e.y - this.y);
+                if(d < minDist) { minDist = d; target = e; }
+            });
+        }
+
+        if(!target) return;
+
+        let dist = Math.hypot(target.x - this.x, target.y - this.y);
+        let range = this.data.type === 'ranged' ? 150 : this.data.radius + (target.radius || 40) + 5;
+
+        if (dist > range) {
+            this.actionState = 'walk';
+            let angle = Math.atan2(target.y - this.y, target.x - this.x);
+            this.x += Math.cos(angle) * this.data.speed;
+            this.y += Math.sin(angle) * this.data.speed;
+        } else {
+            this.actionState = 'attack';
+            if (Date.now() - this.lastAtk > 1000) {
+                target.hp -= this.data.dmg;
+                this.lastAtk = Date.now();
+                FX.spawn(target.x, target.y, this.data.color, 5); // Брызги от удара
+                if(this.data.type === 'ranged') GameApp.drawLaser(this.x, this.y, target.x, target.y, this.data.color);
+            }
+        }
+    }
+    draw(ctx) {
+        let bounce = this.actionState === 'walk' ? Math.sin(this.animOffset) * 3 : 0;
+        
+        // Попытка отрисовать текстуру, если она загружена, иначе fallback
+        let img = Assets.images[this.data.id];
+        if (img && img.complete && img.naturalWidth !== 0) {
+            ctx.drawImage(img, this.x - this.data.radius, this.y - this.data.radius + bounce, this.data.radius*2, this.data.radius*2);
+        } else {
+            // Fallback: красивый круг с градиентом
+            let grad = ctx.createRadialGradient(this.x, this.y+bounce, 0, this.x, this.y+bounce, this.data.radius);
+            grad.addColorStop(0, this.data.color); grad.addColorStop(1, '#111');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(this.x, this.y + bounce, this.data.radius, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = this.team === 1 ? '#3498db' : '#e74c3c';
+            ctx.lineWidth = 2; ctx.stroke();
+        }
+
+        // Полоска ХП
+        ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(this.x - 15, this.y - this.data.radius - 15, 30, 5);
+        ctx.fillStyle = this.team === 1 ? '#3498db' : '#e74c3c';
+        ctx.fillRect(this.x - 15, this.y - this.data.radius - 15, 30 * Math.max(0, this.hp/this.maxHp), 5);
+    }
+}
+
+// ================= СЕТЕВОЙ КЛИЕНТ (WEBSOCKETS) =================
+// ВНИМАНИЕ: Это реальный код клиента. Без запущенного сервера (Node.js) он не подключится.
+class NetworkManager {
+    constructor() { this.socket = null; this.connected = false; }
+    connect() {
+        const statusEl = document.getElementById('network-status');
+        statusEl.innerText = "Подключение к серверу..."; statusEl.className = "status-badge connecting";
+        
+        try {
+            // Пытаемся подключиться к локальному серверу. Замени на wss://твой-домен.com в продакшене.
+            this.socket = new WebSocket('ws://localhost:8080'); 
+            
+            this.socket.onopen = () => {
+                this.connected = true;
+                statusEl.innerText = "СЕТЬ: АКТИВНА (Ожидание игрока)"; statusEl.className = "status-badge connected";
+            };
+            this.socket.onmessage = (msg) => {
+                let data = JSON.parse(msg.data);
+                if(data.type === 'spawn') GameApp.spawnEntity(data.unitId, data.x, data.y, 2); // Спавн врага
+            };
+            this.socket.onerror = () => this.fallbackToBot();
+            this.socket.onclose = () => this.fallbackToBot();
+        } catch (e) { this.fallbackToBot(); }
+    }
+    sendSpawn(unitId, x, y) {
+        if(this.connected && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({ type: 'spawn', unitId, x, y }));
+        }
+    }
+    fallbackToBot() {
+        this.connected = false;
+        const statusEl = document.getElementById('network-status');
+        statusEl.innerText = "СЕРВЕР НЕДОСТУПЕН. РЕЖИМ БОТА."; statusEl.style.color = "#e74c3c"; statusEl.style.borderColor = "#e74c3c";
+    }
+}
+const Net = new NetworkManager();
+
+// ================= ОСНОВНОЕ ЯДРО ИГРЫ =================
+const GameApp = {
+    canvas: document.getElementById('gameCanvas'),
+    ctx: document.getElementById('gameCanvas').getContext('2d'),
+    state: { gold: 1000, gems: 10, trophies: 0, deck: [1, 2, 3, 4] },
+    battle: { active: false, elixir: 5, entities: [], bases: [], loopId: null, timerId: null, botTimer: null },
+
+    init() { this.updateEconomyUI(); },
+
+    navigate(btn) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(btn.dataset.target).classList.add('active');
+        if(btn.dataset.target !== 'screen-battle') this.stopBattle();
     },
 
-    updateElixirUI() {
-        document.getElementById('elixir-fill').style.width = `${(elixir / 25) * 100}%`;
-        document.getElementById('elixir-text').innerText = `${Math.floor(elixir)} / 25`;
+    updateEconomyUI() {
+        document.getElementById('val-gold').innerText = this.state.gold;
+        document.getElementById('val-gems').innerText = this.state.gems;
+        document.getElementById('val-trophies').innerText = this.state.trophies;
+    },
+
+    buyBox(type) {
+        let log = document.getElementById('gacha-log');
+        if(type === 'silver' && this.state.gold >= 800) { this.state.gold -= 800; log.innerText = "Получено: Рыцарь!"; }
+        else if (type === 'mega' && this.state.gems >= 200) { this.state.gems -= 200; this.state.deck[3] = 20; log.innerText = "УЛЬТРА ДРОП: ПОЖИРАТЕЛЬ!"; log.style.color = "#e056fd"; log.style.textShadow = "0 0 20px #e056fd"; }
+        else { log.innerText = "Недостаточно ресурсов!"; log.style.color = "#e74c3c"; return; }
+        this.updateEconomyUI();
+    },
+
+    startMultiplayerSearch() {
+        Net.connect();
+        this.startBattle();
     },
 
     startBattle() {
-        this.initDeck();
-        elixir = 5;
-        entities = [];
-        bases = [new Base(false, 50), new Base(true, 550)];
-        
-        // Регенерация эликсира: 1 ед. каждые 3 секунды. Для динамики MVP сделано 1 ед. в сек.
-        elixirTimer = setInterval(() => {
-            if (elixir < 25) { elixir += 0.33; this.updateElixirUI(); }
-            
-            // AI Bot Спавн (каждые 3 сек)
-            if (Math.random() < 0.4) {
-                let randomUnit = ALL_UNITS[Math.floor(Math.random() * 5)];
-                entities.push(new Entity(randomUnit, 100 + (Math.random()*200), 100, false));
+        this.stopBattle();
+        this.battle.active = true; this.battle.elixir = 5; this.battle.entities = []; FX.particles = [];
+        this.battle.bases = [
+            { team: 1, x: 80, y: 225, hp: 4000, maxHp: 4000, radius: 40 },
+            { team: 2, x: 920, y: 225, hp: 4000, maxHp: 4000, radius: 40 }
+        ];
+        this.renderDeck();
+
+        this.battle.timerId = setInterval(() => {
+            if(this.battle.elixir < 25) { this.battle.elixir += 0.5; this.renderDeck(); }
+        }, 500); // Эликсир 1 ед/сек
+
+        // Бот (если нет сервера)
+        this.battle.botTimer = setInterval(() => {
+            if(!Net.connected && Math.random() < 0.3) {
+                let u = UNITS[Math.floor(Math.random() * 3)];
+                this.spawnEntity(u.id, 900, 50 + Math.random()*350, 2);
             }
-        }, 1000);
+        }, 3000);
 
         this.loop();
     },
 
     stopBattle() {
-        cancelAnimationFrame(gameLoop);
-        clearInterval(elixirTimer);
+        this.battle.active = false;
+        cancelAnimationFrame(this.battle.loopId);
+        clearInterval(this.battle.timerId); clearInterval(this.battle.botTimer);
+    },
+
+    renderDeck() {
+        let e = this.battle.elixir;
+        document.getElementById('elixir-fill').style.width = (e/25*100) + '%';
+        document.getElementById('elixir-val').innerText = Math.floor(e) + ' / 25';
+        
+        const slots = document.getElementById('deck-slots'); slots.innerHTML = '';
+        this.state.deck.forEach(id => {
+            let u = UNITS.find(x => x.id === id);
+            let dis = e < u.cost ? 'disabled' : '';
+            slots.innerHTML += `
+                <div class="card ${dis}" onclick="GameApp.requestSpawn(${u.id})">
+                    <div class="card-cost">${u.cost}</div>
+                    <div class="card-img" style="background-color: ${u.color}"></div>
+                    <div class="card-name">${u.name}</div>
+                </div>`;
+        });
+    },
+
+    requestSpawn(id) {
+        let u = UNITS.find(x => x.id === id);
+        if (this.battle.elixir >= u.cost) {
+            this.battle.elixir -= u.cost;
+            let count = u.count || 1;
+            for(let i=0; i<count; i++) {
+                let y = 100 + Math.random()*250;
+                this.spawnEntity(id, 150, y, 1);
+                Net.sendSpawn(id, 1000 - 150, y); // Отправляем на сервер отзеркаленные координаты
+            }
+            this.renderDeck();
+        }
+    },
+
+    spawnEntity(unitId, x, y, team) {
+        let u = UNITS.find(x => x.id === unitId);
+        if(u) {
+            this.battle.entities.push(new Entity(u, x, y, team));
+            FX.spawn(x, y, '#fff', 10); // Эффект появления
+        }
+    },
+
+    drawLaser(x1, y1, x2, y2, color) {
+        this.ctx.strokeStyle = color; this.ctx.lineWidth = 3;
+        this.ctx.beginPath(); this.ctx.moveTo(x1, y1); this.ctx.lineTo(x2, y2); this.ctx.stroke();
     },
 
     loop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Арена
-        ctx.strokeStyle = "rgba(255,255,255,0.1)";
-        ctx.beginPath(); ctx.moveTo(0, 300); ctx.lineTo(400, 300); ctx.stroke();
+        if(!this.battle.active) return;
+        this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
 
-        bases.forEach(b => b.draw());
-        
-        for (let i = entities.length - 1; i >= 0; i--) {
-            let e = entities[i];
-            e.update();
-            e.draw();
-            if (e.hp <= 0) entities.splice(i, 1);
+        // Базы
+        this.battle.bases.forEach(b => {
+            this.ctx.fillStyle = b.team === 1 ? '#2980b9' : '#c0392b';
+            this.ctx.beginPath(); this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2); this.ctx.fill();
+            this.ctx.fillStyle = "#fff"; this.ctx.font = "bold 20px Arial"; this.ctx.textAlign = "center";
+            this.ctx.fillText(b.hp, b.x, b.y - b.radius - 10);
+        });
+
+        // Частицы
+        FX.updateAndDraw(this.ctx);
+
+        // Сущности
+        for(let i = this.battle.entities.length - 1; i >= 0; i--) {
+            let e = this.battle.entities[i];
+            e.update(this.battle.entities, this.battle.bases);
+            e.draw(this.ctx);
+            if(e.hp <= 0) {
+                FX.spawn(e.x, e.y, e.data.color, 15, true); // Взрыв смерти
+                this.battle.entities.splice(i, 1);
+            }
         }
 
-        // Условие победы
-        if (bases[0].hp <= 0) { alert("ПОБЕДА! +30 Кубков"); state.trophies += 30; state.tokens += 1000; saveState(); gameApp.switchTab('shop'); return; }
-        if (bases[1].hp <= 0) { alert("ПОРАЖЕНИЕ! -20 Кубков"); state.trophies = Math.max(0, state.trophies - 20); saveState(); gameApp.switchTab('shop'); return; }
+        // Проверка конца игры
+        if(this.battle.bases[0].hp <= 0 || this.battle.bases[1].hp <= 0) {
+            if(this.battle.bases[1].hp <= 0) { alert("ЭПИЧНАЯ ПОБЕДА! +30🏆"); this.state.trophies += 30; this.state.gold += 500; }
+            else { alert("ПОРАЖЕНИЕ..."); this.state.trophies = Math.max(0, this.state.trophies - 20); }
+            this.updateEconomyUI();
+            document.querySelector('.nav-btn[data-target="screen-shop"]').click();
+            return;
+        }
 
-        gameLoop = requestAnimationFrame(() => gameApp.loop());
+        this.battle.loopId = requestAnimationFrame(() => this.loop());
     }
 };
 
-// Запуск
-updateUI();
+window.onload = () => GameApp.init();
