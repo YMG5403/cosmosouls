@@ -2,59 +2,74 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battle of the Grid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle of the Grid - PRO</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="ui-layer" class="glass-panel">
-        <header class="top-bar">
-            <div class="player-info">
-                <span id="player-name">Игрок</span>
-                <span class="trophies">🏆 <span id="trophies-count">0</span></span>
+    <div class="bg-grid"></div>
+
+    <div id="app" class="glass-container">
+        <header class="header">
+            <div class="profile">
+                <div class="avatar"></div>
+                <div class="info">
+                    <div id="player-name" class="name">Игрок</div>
+                    <div class="trophies">🏆 <span id="val-trophies">0</span></div>
+                </div>
             </div>
-            <div class="resources">
-                <span class="tokens">🪙 <span id="tokens-count">1000</span></span>
-                <span class="crystals">💎 <span id="crystals-count">10</span></span>
+            <div class="economy">
+                <div class="resource gold">🪙 <span id="val-gold">1000</span></div>
+                <div class="resource gems">💎 <span id="val-gems">10</span></div>
             </div>
         </header>
 
-        <div class="tabs-content">
-            <div id="tab-shop" class="tab active">
-                <h2>Магазин (Гача)</h2>
-                <div class="gacha-container">
-                    <button class="gold-btn" onclick="gameApp.openBox('silver')">Серебряный Ящик<br>Победа / 800 Ж</button>
-                    <button class="gold-btn" onclick="gameApp.openBox('gold')">Золотой Ящик<br>5000 Ж</button>
-                    <button class="ultra-btn" onclick="gameApp.openBox('mega')">Мега-ящик<br>200 💎</button>
-                </div>
-                <div id="gacha-result" class="gacha-result"></div>
-            </div>
-
-            <div id="tab-battle" class="tab" style="display: none;">
-                <canvas id="gameCanvas" width="400" height="600"></canvas>
-                <div class="battle-ui">
-                    <div class="elixir-bar">
-                        <div id="elixir-fill" class="elixir-fill"></div>
-                        <span id="elixir-text" class="elixir-text">0 / 25</span>
+        <main class="main-content">
+            <section id="screen-shop" class="screen active">
+                <h1 class="glow-text">Магазин</h1>
+                <div class="gacha-boxes">
+                    <div class="box silver" onclick="GameApp.buyBox('silver')">
+                        <div class="box-icon">📦</div>
+                        <h3>Серебряный</h3>
+                        <p>800 🪙</p>
                     </div>
-                    <div class="deck-slots" id="deck-slots">
-                        </div>
+                    <div class="box gold" onclick="GameApp.buyBox('gold')">
+                        <div class="box-icon glow">🎁</div>
+                        <h3>Золотой</h3>
+                        <p>5000 🪙</p>
+                    </div>
+                    <div class="box mega" onclick="GameApp.buyBox('mega')">
+                        <div class="box-icon super-glow">💎</div>
+                        <h3>МЕГА-ЯЩИК</h3>
+                        <p>200 💎</p>
+                    </div>
                 </div>
-            </div>
+                <div id="gacha-log" class="log-text"></div>
+            </section>
 
-            <div id="tab-friends" class="tab" style="display: none;">
-                <h2>Друзья</h2>
-                <ul id="friends-list" class="friends-list">
-                    <li>Бот 1 (🏆 100) <button onclick="gameApp.sendGift(this)" class="gold-btn small">Подарить 100🪙</button></li>
-                    <li>Бот 2 (🏆 450) <button onclick="gameApp.sendGift(this)" class="gold-btn small">Подарить 100🪙</button></li>
-                </ul>
-            </div>
-        </div>
+            <section id="screen-battle" class="screen">
+                <div class="arena-wrapper">
+                    <div id="network-status" class="status-badge connecting">Подключение к серверу...</div>
+                    
+                    <canvas id="gameCanvas" width="1000" height="450"></canvas>
+                    
+                    <div class="hud">
+                        <div class="deck-slots" id="deck-slots">
+                            </div>
+                        <div class="elixir-system">
+                            <div class="elixir-bar">
+                                <div id="elixir-fill" class="fill"></div>
+                            </div>
+                            <div id="elixir-val" class="elixir-text">0 / 25</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-        <nav class="bottom-nav">
-            <button onclick="gameApp.switchTab('shop')">Магазин</button>
-            <button onclick="gameApp.switchTab('battle'); gameApp.startBattle()">В БОЙ</button>
-            <button onclick="gameApp.switchTab('friends')">Друзья</button>
+        <nav class="navbar">
+            <button class="nav-btn active" data-target="screen-shop" onclick="GameApp.navigate(this)">🏪 МАГАЗИН</button>
+            <button class="nav-btn battle-btn" data-target="screen-battle" onclick="GameApp.navigate(this); GameApp.startMultiplayerSearch()">⚔️ В БОЙ</button>
         </nav>
     </div>
 
